@@ -39,6 +39,7 @@ df.rename(columns={
 }, inplace=True)
 
 df["Data da Falta"] = pd.to_datetime(df["Data da Falta"], errors='coerce')
+df = df.dropna(subset=["Data da Falta"])
 df["Ano"] = df["Data da Falta"].dt.year
 df["Mês"] = df["Data da Falta"].dt.month_name()
 
@@ -49,11 +50,14 @@ funcionarios = st.sidebar.multiselect("Nome do Profissional", sorted(df["Nome do
 cargos = st.sidebar.multiselect("Motivo da Falta", sorted(df["Motivo"].unique()))
 
 # Intervalo de datas
-data_min = df["Data da Falta"].min().date()
-data_max = df["Data da Falta"].max().date()
-default_inicio = (df["Data da Falta"].max() - timedelta(days=30)).date()
-
-periodo = st.sidebar.date_input("Período da Falta", [default_inicio, data_max], min_value=data_min, max_value=data_max)
+if not df.empty:
+    data_min = df["Data da Falta"].min().date()
+    data_max = df["Data da Falta"].max().date()
+    default_inicio = (df["Data da Falta"].max() - timedelta(days=30)).date()
+    periodo = st.sidebar.date_input("Período da Falta", [default_inicio, data_max], min_value=data_min, max_value=data_max)
+else:
+    st.sidebar.warning("Sem dados disponíveis para gerar os filtros de data.")
+    periodo = []
 
 # Aplica os filtros
 df_filtrado = df.copy()
